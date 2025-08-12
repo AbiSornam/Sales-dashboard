@@ -1,87 +1,46 @@
-import React from 'react'
+'use client';
+
+import React from 'react';
 import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts'
+  CartesianGrid
+} from 'recharts';
+import type { SalesPoint } from '../types';
 
-interface SalesChartProps {
-  data: { year: string; sales: number }[]
-  chartType: 'bar' | 'line' | 'pie'
+export default function SalesChart({ data }: { data: SalesPoint[] }) {
+  if (!data || data.length === 0) {
+    return <div className="text-sm text-slate-500">No data for selected range.</div>;
+  }
+
+  return (
+    <div aria-label="Sales chart" role="img">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-lg font-semibold">Sales Over Time</h3>
+        <div className="text-sm text-slate-500">Interactive · hover for details</div>
+      </div>
+
+      <div style={{ width: '100%', height: 360 }}>
+        <ResponsiveContainer>
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0.1}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.1}/>
+            <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} />
+            <Tooltip formatter={(value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value)} />
+            <Area type="monotone" dataKey="value" stroke="#7c3aed" fill="url(#colorSales)" fillOpacity={0.8} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 }
-
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658']
-
-const SalesChart: React.FC<SalesChartProps> = ({ data, chartType }) => {
-  if (chartType === 'bar') {
-    return (
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="year" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="sales" fill="#8884d8" />
-        </BarChart>
-      </ResponsiveContainer>
-    )
-  }
-
-  if (chartType === 'line') {
-    return (
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="year" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="sales" stroke="#8884d8" />
-        </LineChart>
-      </ResponsiveContainer>
-    )
-  }
-
-  if (chartType === 'pie') {
-    return (
-      <ResponsiveContainer width="100%" height={400}>
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey="sales"
-            nameKey="year"
-            cx="50%"
-            cy="50%"
-            outerRadius={120}
-            fill="#8884d8"
-            label
-          >
-            {data.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
-              />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
-    )
-  }
-
-  return null
-}
-
-export default SalesChart

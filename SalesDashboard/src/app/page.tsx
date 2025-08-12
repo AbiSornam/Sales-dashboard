@@ -1,114 +1,101 @@
 'use client';
 
-import { useState } from 'react';
-import SalesChart from '@/src/components/sales-chart';
-import ChartSwitcher from '@/src/components/chart-switcher';
+import React, { useEffect, useState } from 'react';
+import SalesChart from '../components/sales-chart';
+import SalesFilter from '../components/sales-filter';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorBox from '../components/ErrorBox';
+import MultiCharts from '../components/MultiCharts'; // Import your new chart component
+import { fetchSales } from '../lib/api';
+import type { SalesPoint } from '../types';
 
-// Define the data structure
-interface SalesData {
-  year: string;
-  sales: number;
-}
+export default function DashboardPage() {
+  const [data, setData] = useState<SalesPoint[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{
+    start: string;
+    end: string;
+    granularity: 'daily' | 'monthly' | 'yearly';
+  }>({
+    start: '',
+    end: '',
+    granularity: 'daily',
+  });
 
-// Mock sales data for 2022, 2023, and 2024
-const mockSalesData: SalesData[] = [
-  // 2024
-  { year: 'Jan 2024', sales: 12000 },
-  { year: 'Feb 2024', sales: 13500 },
-  { year: 'Mar 2024', sales: 12800 },
-  { year: 'Apr 2024', sales: 14200 },
-  { year: 'May 2024', sales: 15000 },
-  { year: 'Jun 2024', sales: 15500 },
-  { year: 'Jul 2024', sales: 14800 },
-  { year: 'Aug 2024', sales: 16000 },
-  { year: 'Sep 2024', sales: 14500 },
-  { year: 'Oct 2024', sales: 17000 },
-  { year: 'Nov 2024', sales: 17500 },
-  { year: 'Dec 2024', sales: 18000 },
+  const [lastUpdated, setLastUpdated] = useState('');
 
-  // 2023
-  { year: 'Jan 2023', sales: 10000 },
-  { year: 'Feb 2023', sales: 11500 },
-  { year: 'Mar 2023', sales: 10800 },
-  { year: 'Apr 2023', sales: 11200 },
-  { year: 'May 2023', sales: 12000 },
-  { year: 'Jun 2023', sales: 12500 },
-  { year: 'Jul 2023', sales: 11800 },
-  { year: 'Aug 2023', sales: 13000 },
-  { year: 'Sep 2023', sales: 12500 },
-  { year: 'Oct 2023', sales: 14000 },
-  { year: 'Nov 2023', sales: 14500 },
-  { year: 'Dec 2023', sales: 15000 },
+  // Set timestamp after hydration to avoid SSR hydration mismatch
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleString());
+  }, []);
 
-  // 2022
-  { year: 'Jan 2022', sales: 8000 },
-  { year: 'Feb 2022', sales: 9500 },
-  { year: 'Mar 2022', sales: 8800 },
-  { year: 'Apr 2022', sales: 9200 },
-  { year: 'May 2022', sales: 10000 },
-  { year: 'Jun 2022', sales: 10500 },
-  { year: 'Jul 2022', sales: 9800 },
-  { year: 'Aug 2022', sales: 11000 },
-  { year: 'Sep 2022', sales: 10200 },
-  { year: 'Oct 2022', sales: 11800 },
-  { year: 'Nov 2022', sales: 12200 },
-  { year: 'Dec 2022', sales: 12500 },
-];
+  // Fetch sales data when filters change
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
 
-// Aggregate yearly sales for pie chart
-const yearlySalesData: SalesData[] = [
-  {
-    year: '2022',
-    sales: mockSalesData
-      .filter(d => d.year.includes('2022'))
-      .reduce((sum, d) => sum + d.sales, 0),
-  },
-  {
-    year: '2023',
-    sales: mockSalesData
-      .filter(d => d.year.includes('2023'))
-      .reduce((sum, d) => sum + d.sales, 0),
-  },
-  {
-    year: '2024',
-    sales: mockSalesData
-      .filter(d => d.year.includes('2024'))
-      .reduce((sum, d) => sum + d.sales, 0),
-  },
-];
+    fetchSales(filters)
+      .then((res) => {
+        if (!cancelled) setData(res);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(String(err) || 'Failed to load sales');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-const DashboardPage: React.FC = () => {
-  const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar');
+    return () => {
+      cancelled = true;
+    };
+  }, [filters]);
 
   return (
-    <>
-      <head>
-        <title>My Awesome Sales Dashboard</title>
-      </head>
-
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-10">
-        <div className="container mx-auto p-8 bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-700">
-          {/* Dashboard Header */}
-          <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 text-center mb-8">
-            Sales Dashboard
-          </h1>
-
-          {/* Chart Switcher */}
-          <div className="flex justify-center mb-10">
-            <ChartSwitcher chartType={chartType} setChartType={setChartType} />
-          </div>
-
-          {/* Chart */}
-          <div className="w-full h-[450px] bg-gray-900 rounded-xl p-6 shadow-inner">
-            <SalesChart
-              data={chartType === 'pie' ? yearlySalesData : mockSalesData}
-              chartType={chartType}
-            />
-          </div>
-        </div>
+    <section aria-labelledby="dashboard-heading" className="space-y-6">
+      {/* Header with Last Updated */}
+      <div className="flex items-center justify-between">
+        <h2 id="dashboard-heading" className="text-2xl font-bold">
+          Overview
+        </h2>
+        <div className="text-sm text-slate-600">Last updated: {lastUpdated}</div>
       </div>
-    </>
-  );
-};
 
-export default DashboardPage;
+      {/* Filters */}
+      <div id="filters" className="bg-white p-4 rounded-lg shadow-sm">
+        <SalesFilter
+          initialFilters={filters}
+          onChange={(f) => setFilters(f)}
+          onReset={() => setFilters({ start: '', end: '', granularity: 'daily' })}
+        />
+      </div>
+
+      {/* Charts and Insights */}
+      <div id="charts" className="grid lg:grid-cols-3 gap-6">
+        {/* Main charts column spans 2 */}
+        <div className="lg:col-span-2 bg-white p-4 rounded-lg shadow-sm">
+          {loading && <LoadingSpinner label="Loading chart data" />}
+          {error && <ErrorBox message={error} onRetry={() => setFilters({ ...filters })} />}
+          {!loading && !error && data && (
+            <>
+              <SalesChart data={data} />
+              <div className="mt-8">
+                <MultiCharts />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Insights sidebar */}
+        <aside className="bg-white p-4 rounded-lg shadow-sm">
+          <h3 className="font-semibold">Insights</h3>
+          <p className="text-sm text-slate-600 mt-2">
+            Quick take: the dashboard uses mock data; integrate a real API by editing{' '}
+            <code>src/lib/api.ts</code>.
+          </p>
+        </aside>
+      </div>
+    </section>
+  );
+}
