@@ -3,7 +3,7 @@ import React from 'react';
 import type { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Abii Sales Dashboard ✨',
+  title: 'Sales Dashboard ✨',
   description: 'Colorful, accessible sales dashboard — interactive charts, filters, and performance-first design.'
 };
 
