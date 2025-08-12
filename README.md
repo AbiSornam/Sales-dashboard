@@ -1,5 +1,6 @@
 📊 Sales Dashboard
-Overview ✅
+Overview ✅ 
+
 The Sales Dashboard is a responsive, interactive web application designed to visualize sales data in an intuitive manner. It enables users to track performance trends, apply filters, and analyze KPIs with modern UI components.
 
 🎯 Project Purpose ✅
@@ -51,7 +52,12 @@ Step 3 – Connect your GitHub repository to Vercel.
 Step 4 – Vercel will handle automatic deployment with every push.
 
 🖼 Screenshots 🔹
-Insert relevant images from the public folder or take new screenshots of the dashboard UI.
+![Dashboard View](SalesDashboard/public/dashboard.png)
+Line Chart
+![Dashboard View](SalesDashboard/public/line_chart.png)
+Pie Chart
+![Dashboard View](SalesDashboard/public/pie_chart.png)
+
 
 
 🏛 Architectural Decisions 🔹
