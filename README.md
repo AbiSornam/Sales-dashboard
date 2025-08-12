@@ -52,11 +52,10 @@ Step 3 – Connect your GitHub repository to Vercel.
 Step 4 – Vercel will handle automatic deployment with every push.
 
 🖼 Screenshots 🔹
-![Dashboard View](SalesDashboard/public/dashboard.png)
-Line Chart
-![Dashboard View](SalesDashboard/public/line_chart.png)
-Pie Chart
-![Dashboard View](SalesDashboard/public/pie_chart.png)
+![Dashboard View](SalesDashboard/public/front.png)
+
+Line Chart&Pie Chart
+![Dashboard View](SalesDashboard/public/charts.png)
 
 
 
